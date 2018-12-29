@@ -33,13 +33,60 @@ module.exports = {
     },
   },
 
-  Mutation: {},
+  Mutation: {
+    async bookTrips(root, { launchIds }, ctx, info) {
+      const { launchAPI, userAPI } = ctx.dataSources;
+
+      const launches = await launchAPI.getLaunchesByIds({ launchIds });
+      const results = await userAPI.bookTrips({ launchIds });
+      const success = results && launches.length === results.length;
+
+      return {
+        success,
+        message: success
+          ? 'trips booked successfully'
+          : `the following trips couldn't be booked: ${launchIds.filter(
+              id => !results.includes(id)
+            )}`,
+        launches,
+      };
+    },
+
+    async cancelTrip(root, { launchId }, ctx, info) {
+      const { launchAPI, userAPI } = ctx.dataSources;
+
+      const result = await userAPI.cancelTrip({ launchId });
+      const launch = await launchAPI.getLaunchById({ launchId });
+      const success = !!result;
+
+      return {
+        success,
+        message: success ? 'trip cancelled' : 'failed to cancel the trip',
+        launches: [launch],
+      };
+    },
+  },
 
   Mission: {
     missionPatch(mission, { size = 'LARGE' }, ctx, info) {
       return size === 'LARGE'
         ? mission.missionPatchLarge
         : mission.missionPatchSmall;
+    },
+  },
+
+  User: {
+    async trips(user, args, ctx, info) {
+      const { launchAPI, userAPI } = ctx.dataSources;
+
+      const launchIds = await userAPI.getLaunchIdsByUser();
+      return launchAPI.getLaunchesByIds({ launchIds });
+    },
+  },
+
+  Launch: {
+    async isBooked({ id: launchId }, args, ctx, info) {
+      return ctx.dataSources.userAPI.isBookedOnLaunch({ launchId });
     },
   },
 };
