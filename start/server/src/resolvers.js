@@ -2,7 +2,7 @@ const { paginateResults } = require('./utils');
 
 module.exports = {
   Query: {
-    async launches(parent, { pageSize = 20, after }, ctx, info) {
+    async launches(root, { pageSize = 20, after }, ctx, info) {
       const allLaunches = await ctx.dataSources.launchAPI.getAllLaunches();
       allLaunches.reverse();
 
@@ -24,7 +24,7 @@ module.exports = {
       };
     },
 
-    launch(parent, { id: launchId }, ctx, info) {
+    launch(root, { id: launchId }, ctx, info) {
       return ctx.dataSources.launchAPI.getLaunchById({ launchId });
     },
 
@@ -46,7 +46,7 @@ module.exports = {
         message: success
           ? 'trips booked successfully'
           : `the following trips couldn't be booked: ${launchIds.filter(
-              id => !results.includes(id)
+              id => !results.includes(id),
             )}`,
         launches,
       };
@@ -64,6 +64,13 @@ module.exports = {
         message: success ? 'trip cancelled' : 'failed to cancel the trip',
         launches: [launch],
       };
+    },
+
+    async login(root, { email }, ctx, info) {
+      const user = await ctx.dataSources.userAPI.findOrCreateUser({ email });
+      if (user) {
+        return new Buffer(email).toString('base64');
+      }
     },
   },
 
