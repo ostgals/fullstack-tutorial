@@ -19,7 +19,7 @@ const server = new ApolloServer({
   }),
   context: async ({ req }) => {
     const token = (req.headers && req.headers.authorization) || '';
-    const email = new Buffer(token, 'base64').toString('ascii');
+    const email = Buffer.from(token, 'base64').toString('ascii');
     console.log(token, email);
 
     if (!isEmail.validate(email)) {

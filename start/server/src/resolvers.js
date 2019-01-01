@@ -46,7 +46,7 @@ module.exports = {
         message: success
           ? 'trips booked successfully'
           : `the following trips couldn't be booked: ${launchIds.filter(
-              id => !results.includes(id),
+              id => !results.includes(id)
             )}`,
         launches,
       };
@@ -69,7 +69,7 @@ module.exports = {
     async login(root, { email }, ctx, info) {
       const user = await ctx.dataSources.userAPI.findOrCreateUser({ email });
       if (user) {
-        return new Buffer(email).toString('base64');
+        return Buffer.from(email).toString('base64');
       }
     },
   },
